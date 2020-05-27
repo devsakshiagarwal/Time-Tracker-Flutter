@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class User {
   User({@required this.uid});
@@ -8,9 +10,15 @@ class User {
 }
 
 abstract class AuthBase {
+  Stream<User> get onAuthStateChanged;
+
   Future<User> currentUser();
 
   Future<User> signInAnonymously();
+
+  Future<User> signInWithGoogle();
+
+  void
 
   void signOut();
 }
@@ -25,6 +33,7 @@ class Auth implements AuthBase {
     return User(uid: user.uid);
   }
 
+  @override
   Stream<User> get onAuthStateChanged {
     return _firebaseAuth.onAuthStateChanged.map(_userFromFirebase);
   }
@@ -42,7 +51,36 @@ class Auth implements AuthBase {
   }
 
   @override
+  Future<User> signInWithGoogle() async {
+    final googleSignIn = GoogleSignIn();
+    final googleAccount = await googleSignIn.signIn();
+    if (googleAccount != null) {
+      final googleAuth = await googleAccount.authentication;
+      if (googleAuth.accessToken != null && googleAuth.idToken != null) {
+        final authResult = await _firebaseAuth.signInWithCredential(
+          GoogleAuthProvider.getCredential(
+            idToken: googleAuth.idToken,
+            accessToken: googleAuth.accessToken,
+          ),
+        );
+        return _userFromFirebase(authResult.user);
+      } else {
+        throw PlatformException(
+          code: "ERROR_MISSING_GOOGLE_AUTH_TOKEN",
+          message: "Missing Google Auth Token",
+        );
+      }
+    } else {
+      throw PlatformException(
+        code: "ERROR_ABORTED_BY_USER",
+        message: "Sign in aborted by user",
+      );
+    }
+  }
+
+  @override
   void signOut() async {
+    await GoogleSignIn().signOut();
     await _firebaseAuth.signOut();
   }
 }
