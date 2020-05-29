@@ -1,16 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:time_tracker_flutter_course/app/services/auth.dart';
 import 'package:time_tracker_flutter_course/app/sign_in/validators.dart';
 import 'package:time_tracker_flutter_course/common_widget/form_submit_button.dart';
+import 'package:time_tracker_flutter_course/common_widget/platform_exception_alert_dialog.dart';
 
 enum EmailSignInFormType { signIn, register }
 
 class EmailSignInForm extends StatefulWidget with EmailAndPasswordValidators {
-  EmailSignInForm({@required this.auth});
-
-  final AuthBase auth;
-
   @override
   _EmailSignInFormState createState() => _EmailSignInFormState();
 }
@@ -30,6 +29,15 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   bool _submitted = false;
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _focusNodeEmail.dispose();
+    _focusNodePassword.dispose();
+    super.dispose();
+  }
+
   void _submit() async {
     setState(() {
       _submitted = true;
@@ -37,13 +45,18 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
     });
     try {
       if (_formType == EmailSignInFormType.signIn) {
-        await widget.auth.signInWithEmail(_email, _password);
+        await Provider.of<AuthBase>(context, listen: false)
+            .signInWithEmail(_email, _password);
       } else {
-        await widget.auth.createUserWithEmail(_email, _password);
+        await Provider.of<AuthBase>(context, listen: false)
+            .createUserWithEmail(_email, _password);
       }
       Navigator.of(context).pop();
-    } catch (e) {
-      print(e.toString());
+    } on PlatformException catch (e) {
+      PlatformExceptionAlertDialog(
+        title: "Sign in failed",
+        exception: e,
+      ).show(context);
     } finally {
       setState(() {
         _isLoading = false;
