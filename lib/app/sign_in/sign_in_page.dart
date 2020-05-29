@@ -10,34 +10,36 @@ import 'package:time_tracker_flutter_course/app/sign_in/social_sign_in_button.da
 import 'package:time_tracker_flutter_course/common_widget/platform_exception_alert_dialog.dart';
 
 class SignInPage extends StatelessWidget {
+  SignInPage({Key key, @required this.bloc}) : super(key: key);
+
+  final SignInBloc bloc;
+
   static Widget create(BuildContext context) {
+    final auth = Provider.of<AuthBase>(context, listen: false);
     return Provider<SignInBloc>(
-      create: (_) => SignInBloc(),
-      child: SignInPage(),
+      create: (_) => SignInBloc(auth: auth),
+      dispose: (context, bloc) => bloc.dispose(),
+      child: Consumer<SignInBloc>(
+        builder: (context, bloc, _) => SignInPage(
+          bloc: bloc,
+        ),
+      ),
     );
   }
 
   Future<void> _signInAnonymously(BuildContext context) async {
-    final bloc = Provider.of<SignInBloc>(context, listen: false);
     try {
-      bloc.setIsLoading(true);
-      await Provider.of<AuthBase>(context, listen: false).signInAnonymously();
+      await bloc.signInAnonymously();
     } on PlatformException catch (e) {
       _showSignInError(context, e);
-    } finally {
-      bloc.setIsLoading(false);
     }
   }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
-    final bloc = Provider.of<SignInBloc>(context, listen: false);
     try {
-      bloc.setIsLoading(true);
-      await Provider.of<AuthBase>(context, listen: false).signInWithGoogle();
+      await bloc.signInWithGoogle();
     } on PlatformException catch (e) {
       _showSignInError(context, e);
-    } finally {
-      bloc.setIsLoading(false);
     }
   }
 
@@ -59,7 +61,6 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = Provider.of<SignInBloc>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: Text("Time Tracker"),

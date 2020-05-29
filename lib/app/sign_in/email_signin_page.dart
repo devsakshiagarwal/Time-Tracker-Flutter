@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:time_tracker_flutter_course/app/sign_in/email_signin_form.dart';
+import 'package:time_tracker_flutter_course/app/sign_in/email_signin_form_bloc_based.dart';
 
 class EmailSignInPage extends StatelessWidget {
   @override
@@ -13,7 +13,7 @@ class EmailSignInPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: EmailSignInForm(),
+          child: EmailSignInFormBlocBased.create(context),
         ),
       ),
       backgroundColor: Colors.grey[200],
