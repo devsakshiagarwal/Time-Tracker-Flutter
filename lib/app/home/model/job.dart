@@ -1,22 +1,25 @@
 import 'package:flutter/cupertino.dart';
 
 class Job {
+  final String id;
   final String name;
   final dynamic ratePerHour;
 
-  Job({@required this.name, @required this.ratePerHour});
+  Job({@required this.id, @required this.name, @required this.ratePerHour});
 
-  factory Job.fromMap(Map<String, dynamic> data) {
-    if(data == null) {
+  factory Job.fromMap(Map<String, dynamic> data, String documentId) {
+    if (data == null) {
       return null;
     }
     final String name = data["name"];
-    final String ratePerHour = data["ratePerHour"];
+    final int ratePerHour = data["ratePerHour"];
     return Job(
+      id: documentId,
       name: name,
       ratePerHour: ratePerHour,
     );
   }
+
   Map<String, dynamic> toMap() {
     return {"name": name, "ratePerHour": ratePerHour};
   }

@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
-import 'package:time_tracker_flutter_course/app/home/jobs/add_job_page.dart';
+import 'package:time_tracker_flutter_course/app/home/jobs/edit_job_page.dart';
+import 'package:time_tracker_flutter_course/app/home/jobs/jobs_list_tile.dart';
 import 'package:time_tracker_flutter_course/app/home/model/job.dart';
 import 'package:time_tracker_flutter_course/app/services/auth.dart';
 import 'package:time_tracker_flutter_course/app/services/database.dart';
@@ -38,10 +39,15 @@ class JobsPage extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final jobs = snapshot.data;
-          final children = jobs.map((e) => Text(e.name)).toList();
+          final children = jobs
+              .map((e) => JobListTile(
+                    job: e,
+                    onTap: () => EditJobPage.show(context, e),
+                  ))
+              .toList();
           return ListView(children: children);
         }
-        if(snapshot.hasError) {
+        if (snapshot.hasError) {
           return Center(child: Text("Some error occured"));
         }
         return Center(
@@ -68,7 +74,7 @@ class JobsPage extends StatelessWidget {
       ),
       body: _buildContents(context),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => AddJobPage.show(context),
+        onPressed: () => EditJobPage.show(context, null),
         child: Icon(Icons.add),
       ),
     );
