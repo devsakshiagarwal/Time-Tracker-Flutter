@@ -1,13 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:time_tracker_flutter_course/app/home/model/job.dart';
 
 class JobListTile extends StatelessWidget {
+  const JobListTile({Key key, @required this.job, this.onTap}) : super(key: key);
   final Job job;
   final VoidCallback onTap;
-
-  const JobListTile({Key key, @required this.job, this.onTap})
-      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:time_tracker_flutter_course/app/services/auth.dart';
 import 'package:time_tracker_flutter_course/app/sign_in/validators.dart';
+import 'package:time_tracker_flutter_course/services/auth.dart';
 
 import 'email_signin_model.dart';
 
@@ -53,9 +53,9 @@ class EmailSignInChangeModel with EmailAndPasswordValidators, ChangeNotifier {
     updateWith(submitted: true, isLoading: true);
     try {
       if (formType == EmailSignInFormType.signIn) {
-        await auth.signInWithEmail(email, password);
+        await auth.signInWithEmailAndPassword(email, password);
       } else {
-        await auth.createUserWithEmail(email, password);
+        await auth.createUserWithEmailAndPassword(email, password);
       }
     } catch (e) {
       updateWith(isLoading: false);

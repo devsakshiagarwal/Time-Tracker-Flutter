@@ -4,9 +4,15 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class User {
-  User({@required this.uid});
+  User({
+    @required this.uid,
+    this.photoUrl,
+    this.displayName,
+  });
 
   final String uid;
+  final String photoUrl;
+  final String displayName;
 }
 
 abstract class AuthBase {
@@ -16,13 +22,13 @@ abstract class AuthBase {
 
   Future<User> signInAnonymously();
 
+  Future<User> signInWithEmailAndPassword(String email, String password);
+
+  Future<User> createUserWithEmailAndPassword(String email, String password);
+
   Future<User> signInWithGoogle();
 
-  Future<User> signInWithEmail(String email, String password);
-
-  Future<User> createUserWithEmail(String email, String password);
-
-  void signOut();
+  Future<void> signOut();
 }
 
 class Auth implements AuthBase {
@@ -32,7 +38,11 @@ class Auth implements AuthBase {
     if (user == null) {
       return null;
     }
-    return User(uid: user.uid);
+    return User(
+      uid: user.uid,
+      displayName: user.displayName,
+      photoUrl: user.photoUrl,
+    );
   }
 
   @override
@@ -42,14 +52,29 @@ class Auth implements AuthBase {
 
   @override
   Future<User> currentUser() async {
-    FirebaseUser firebaseUser = await _firebaseAuth.currentUser();
-    return _userFromFirebase(firebaseUser);
+    final user = await _firebaseAuth.currentUser();
+    return _userFromFirebase(user);
   }
 
   @override
   Future<User> signInAnonymously() async {
-    final authUser = await _firebaseAuth.signInAnonymously();
-    return _userFromFirebase(authUser.user);
+    final authResult = await _firebaseAuth.signInAnonymously();
+    return _userFromFirebase(authResult.user);
+  }
+
+  @override
+  Future<User> signInWithEmailAndPassword(String email, String password) async {
+    final authResult = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email, password: password);
+    return _userFromFirebase(authResult.user);
+  }
+
+  @override
+  Future<User> createUserWithEmailAndPassword(
+      String email, String password) async {
+    final authResult = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email, password: password);
+    return _userFromFirebase(authResult.user);
   }
 
   @override
@@ -68,35 +93,22 @@ class Auth implements AuthBase {
         return _userFromFirebase(authResult.user);
       } else {
         throw PlatformException(
-          code: "ERROR_MISSING_GOOGLE_AUTH_TOKEN",
-          message: "Missing Google Auth Token",
+          code: 'ERROR_MISSING_GOOGLE_AUTH_TOKEN',
+          message: 'Missing Google Auth Token',
         );
       }
     } else {
       throw PlatformException(
-        code: "ERROR_ABORTED_BY_USER",
-        message: "Sign in aborted by user",
+        code: 'ERROR_ABORTED_BY_USER',
+        message: 'Sign in aborted by user',
       );
     }
   }
 
   @override
-  Future<User> signInWithEmail(String email, String password) async {
-    final authResult = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email, password: password);
-    return _userFromFirebase(authResult.user);
-  }
-
-  @override
-  Future<User> createUserWithEmail(String email, String password) async {
-    final authResult = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email, password: password);
-    return _userFromFirebase(authResult.user);
-  }
-
-  @override
-  void signOut() async {
-    await GoogleSignIn().signOut();
+  Future<void> signOut() async {
+    final googleSignIn = GoogleSignIn();
+    await googleSignIn.signOut();
     await _firebaseAuth.signOut();
   }
 }
